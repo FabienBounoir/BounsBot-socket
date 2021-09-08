@@ -33,6 +33,14 @@ io.on('connection', (socket) => {
         io.to(socket.id).emit("receive", lastMessage);
     })
 
+    socket.on("voice", (data) => {
+        var newData = data.split(";");
+        newData[0] = "data:audio/ogg;";
+        newData = newData[0] + newData[1];
+        socket.broadcast.emit("getVoice", newData);
+    });
+
+
     socket.on('disconnect', () => {
         console.log('user disconnected');
         deleteUser(socket.id);
