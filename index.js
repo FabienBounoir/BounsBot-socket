@@ -54,6 +54,7 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         console.log(`${socket.id} deconnecté`);
-        deleteUser(socket.id);
+        userInVocal = userInVocal.filter(user => user.socketId != socketDelete)
+        io.emit("leaveUpdate", userInVocal);
     });
 })
