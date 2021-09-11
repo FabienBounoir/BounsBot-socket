@@ -11,16 +11,18 @@ var lastMessage = []
 io.on('connection', (socket) => {
     console.log(socket.id)
 
+    socket.on('init', () => {
+        io.to(socket.id).emit("joinUpdate", userInVocal);
+        io.to(socket.id).emit("receive", lastMessage);
+    })
+
     socket.on('tchat', message => {
         socket.broadcast.emit("receive", message);
         lastMessage = message
-        console.log(message);
     })
 
-    socket.on('joinVocal', (name, picture) => {
-        userInVocal.push({socketId:socket.id, name:name, picture:picture})
-        console.log("------------")
-        console.log(userInVocal)
+    socket.on('joinVocal', (name, picture, muet) => {
+        userInVocal.push({socketId: socket.id, name: name, picture: picture, muet: muet})
         io.emit("joinUpdate", userInVocal);
     })
 
@@ -28,9 +30,14 @@ io.on('connection', (socket) => {
         deleteUser(socket.id)
     })
 
-    socket.on('init', () => {
-        io.to(socket.id).emit("joinUpdate", userInVocal);
-        io.to(socket.id).emit("receive", lastMessage);
+    socket.on("muet", (muet) => {
+        
+        let otherUser = userInVocal.filter(user => user.socketId != socket.id)
+        let thisUser = userInVocal.filter(user => user.socketId == socket.id)
+
+        thisUser[0].muet = muet
+        userInVocal = [...otherUser,...thisUser]
+        socket.broadcast.emit("muetUpdate", userInVocal);
     })
 
     socket.on("voice", (data) => {
@@ -40,7 +47,6 @@ io.on('connection', (socket) => {
         socket.broadcast.emit("getVoice", newData);
     });
 
-
     socket.on('disconnect', () => {
         console.log('user disconnected');
         deleteUser(socket.id);
@@ -48,18 +54,6 @@ io.on('connection', (socket) => {
 
     function deleteUser(socketDelete)
     {
-        for(let i=0; i < userInVocal.length ;i++)
-        {
-            console.log('socket a delete: '+ socketDelete)
-            console.log('socket check: '+ userInVocal[i].socketId)
-
-            if(userInVocal[i].socketId === socketDelete)
-            {
-                userInVocal.splice(i, i + 1);
-            }
-        }
-        console.log(userInVocal)
-        io.emit("leaveUpdate", userInVocal);
+        userInVocal = userInVocal.filter(user => user.socketId != socketDelete)
     }
-
 })
