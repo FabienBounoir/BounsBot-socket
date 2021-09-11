@@ -29,7 +29,8 @@ io.on('connection', (socket) => {
 
     socket.on('leaveVocal', () => {
         console.log(`socket ${socket.id} leave le Vocal`)
-        deleteUser(socket.id)
+        userInVocal = userInVocal.filter(user => user.socketId != socketDelete)
+        io.emit("leaveUpdate", userInVocal);
     })
 
     socket.on("muet", (muet) => {
@@ -55,9 +56,4 @@ io.on('connection', (socket) => {
         console.log(`${socket.id} deconnecté`);
         deleteUser(socket.id);
     });
-
-    function deleteUser(socketDelete)
-    {
-        userInVocal = userInVocal.filter(user => user.socketId != socketDelete)
-    }
 })
