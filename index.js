@@ -33,16 +33,30 @@ io.on('connection', (socket) => {
         io.emit("leaveUpdate", userInVocal);
     })
 
-    socket.on("muet", (muet) => {
-        
+    socket.on("muet", (muet) => {        
         console.log(`socket ${socket.id} est maintenant ${muet ? ("muet") : ("demute")}`)
 
         let otherUser = userInVocal.filter(user => user.socketId != socket.id)
         let thisUser = userInVocal.filter(user => user.socketId == socket.id)
 
+        if(!thisUser[0]) return
+
         thisUser[0].muet = muet
         userInVocal = [...otherUser,...thisUser]
-        socket.broadcast.emit("muetUpdate", userInVocal);
+        socket.broadcast.emit("vocalUpdate", userInVocal);
+    })
+
+    socket.on("UpdateNickname" ,(nickname) => {
+        console.log(`socket ${socket.id} s'appel maintenant ${nickname}`)
+
+        let otherUser = userInVocal.filter(user => user.socketId != socket.id)
+        let thisUser = userInVocal.filter(user => user.socketId == socket.id)
+
+        if(!thisUser[0]) return
+
+        thisUser[0].name = nickname
+        userInVocal = [...otherUser,...thisUser]
+        socket.broadcast.emit("vocalUpdate", userInVocal);
     })
 
     socket.on("voice", (data) => {
