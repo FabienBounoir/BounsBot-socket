@@ -1,4 +1,4 @@
-const io = require('socket.io')(process.env.PORT || 80,{
+const io = require('socket.io')(process.env.PORT || 3001,{
     cors:{
         origin:"*"
     }
@@ -9,7 +9,7 @@ var lastMessage = []
 
 //create socket for Radio tchat
 io.on('connection', (socket) => {
-    console.log(socket.id)
+    console.log(`${socket.id} connecté`)
 
     socket.on('init', () => {
         io.to(socket.id).emit("joinUpdate", userInVocal);
@@ -22,16 +22,20 @@ io.on('connection', (socket) => {
     })
 
     socket.on('joinVocal', (name, picture, muet) => {
+        console.log(`socket ${socket.id} join Vocal est ${muet ? ("muet") : ("demute")}`)
         userInVocal.push({socketId: socket.id, name: name, picture: picture, muet: muet})
         io.emit("joinUpdate", userInVocal);
     })
 
     socket.on('leaveVocal', () => {
+        console.log(`socket ${socket.id} leave le Vocal`)
         deleteUser(socket.id)
     })
 
     socket.on("muet", (muet) => {
         
+        console.log(`socket ${socket.id} est maintenant ${muet ? ("muet") : ("demute")}`)
+
         let otherUser = userInVocal.filter(user => user.socketId != socket.id)
         let thisUser = userInVocal.filter(user => user.socketId == socket.id)
 
@@ -48,7 +52,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        console.log('user disconnected');
+        console.log(`${socket.id} deconnecté`);
         deleteUser(socket.id);
     });
 
