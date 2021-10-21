@@ -5,7 +5,7 @@ mais aussi pour la gestion du son dans le channel vocal (a la facon de discord).
 
 ## Technologie:
 
-Les sockets sont utilisé sur la page [radio](https://bounsbot.herokuapp.com/radio) qui utilise [socket.io](https://socket.io/)
+Les sockets sont utilisé sur la page [Demo](https://bounsbot.herokuapp.com/demo) qui utilise [socket.io](https://socket.io/)
 Le site est hebergé sur [Heroku](https://www.heroku.com/)
 
 ### Information
