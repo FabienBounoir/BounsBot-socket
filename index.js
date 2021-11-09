@@ -24,10 +24,7 @@ io.on('connection', (socket) => {
     socket.on('joinVocal', (name, picture, muet) => {
         console.log(`socket ${socket.id} join Vocal est ${muet ? ("muet") : ("demute")}`)
         userInVocal.push({socketId: socket.id, name: name, picture: picture, muet: muet})
-        if(userInVocal.length > 1)
-        {
-            io.emit("joinUpdate", userInVocal);
-        }
+        io.emit("joinUpdate", userInVocal);
     })
 
     socket.on('leaveVocal', () => {
