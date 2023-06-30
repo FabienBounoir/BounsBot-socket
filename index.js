@@ -1,11 +1,11 @@
-const io = require('socket.io')(process.env.PORT || 3001,{
-    cors:{
-        origin:"*"
+const io = require('socket.io')(process.env.PORT || 3001, {
+    cors: {
+        origin: "*"
     }
 });
 
-var userInVocal = [];
-var lastMessage = []
+let userInVocal = [];
+let messages = [];
 
 //create socket for Radio tchat
 io.on('connection', (socket) => {
@@ -13,17 +13,25 @@ io.on('connection', (socket) => {
 
     socket.on('init', () => {
         io.to(socket.id).emit("joinUpdate", userInVocal);
-        io.to(socket.id).emit("receive", lastMessage);
+
+        for (let message of messages) {
+            io.to(socket.id).emit("receive", message);
+        }
     })
 
     socket.on('tchat', message => {
+        messages.push(message)
+
+        if (messages.length > 3) {
+            messages = messages.slice(messages.length - 3, messages.length)
+        }
+
         socket.broadcast.emit("receive", message);
-        lastMessage = message
     })
 
     socket.on('joinVocal', (name, picture, muet) => {
         console.log(`socket ${socket.id} join Vocal est ${muet ? ("muet") : ("demute")}`)
-        userInVocal.push({socketId: socket.id, name: name, picture: picture, muet: muet})
+        userInVocal.push({ socketId: socket.id, name: name, picture: picture, muet: muet })
         io.emit("joinUpdate", userInVocal);
     })
 
@@ -33,34 +41,34 @@ io.on('connection', (socket) => {
         io.emit("leaveUpdate", userInVocal);
     })
 
-    socket.on("muet", (muet) => {        
+    socket.on("muet", (muet) => {
         console.log(`socket ${socket.id} est maintenant ${muet ? ("muet") : ("demute")}`)
 
         let otherUser = userInVocal.filter(user => user.socketId != socket.id)
         let thisUser = userInVocal.filter(user => user.socketId == socket.id)
 
-        if(!thisUser[0]) return
+        if (!thisUser[0]) return
 
         thisUser[0].muet = muet
-        userInVocal = [...otherUser,...thisUser]
+        userInVocal = [...otherUser, ...thisUser]
         socket.broadcast.emit("vocalUpdate", userInVocal);
     })
 
-    socket.on("UpdateNickname" ,(nickname) => {
+    socket.on("UpdateNickname", (nickname) => {
         console.log(`socket ${socket.id} s'appel maintenant ${nickname}`)
 
         let otherUser = userInVocal.filter(user => user.socketId != socket.id)
         let thisUser = userInVocal.filter(user => user.socketId == socket.id)
 
-        if(!thisUser[0]) return
+        if (!thisUser[0]) return
 
         thisUser[0].name = nickname
-        userInVocal = [...otherUser,...thisUser]
+        userInVocal = [...otherUser, ...thisUser]
         socket.broadcast.emit("vocalUpdate", userInVocal);
     })
 
     socket.on("voice", (data) => {
-        var newData = data.split(";");
+        let newData = data.split(";");
         newData[0] = "data:audio/ogg;";
         newData = newData[0] + newData[1];
         socket.broadcast.emit("getVoice", newData);
